@@ -1,0 +1,40 @@
+--
+-- For more information on build.settings see the Corona SDK Build Guide at:
+-- https://docs.coronalabs.com/guide/distribution/buildSettings
+--
+
+settings =
+{
+	orientation =
+	{
+		-- Supported values for orientation:
+		-- portrait, portraitUpsideDown, landscapeLeft, landscapeRight
+
+		default = "landscapeLeft",
+		supported = { "landscapeLeft", "landscapeRight" },
+	},
+	
+	excludeFiles =
+	{
+		-- Include only the necessary icon files on each platform
+		android = { "Icon.png", "Icon-Small-*.png", "Icon*@2x.png", },
+	},
+
+	--
+	-- Android Section
+	--
+	android =
+	{
+		coronaWindowMovesWhenKeyboardAppears = true,
+        installLocation = "auto",
+        largeHeap = true,
+        usesExpansionFile = false,
+        supportsTV = false, -- 안드로이드TV를 지원하려면 true
+        isGame = true, -- 게임이 아니라면 false		
+		usesPermissions =
+		{
+			"android.permission.INTERNET",
+			"android.permission.ACCESS_NETWORK_STATE",
+		},
+	},
+}
