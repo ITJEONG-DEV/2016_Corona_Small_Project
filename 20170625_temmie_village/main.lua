@@ -7,13 +7,13 @@ display.setStatusBar( display.HiddenStatusBar )
 
 display.statusBarHeight = 0
 
--- Seed the random number generator
-math.randomseed( os.time() )
-
 -- Reserve channel 1 for background music
 audio.reserveChannels( 1 )
 -- Reduce the overall volume of the channel
-audio.setVolume( 0.5, { channel=1 } )
+audio.setVolume( 0.05, { channel=1 } )
+
+-- Seed the random number generator
+math.randomseed( os.time() )
 
 local _W, _H = display.contentWidth, display.contentHeight
 
@@ -31,7 +31,7 @@ end
 -- -----------------------------------------------------------------------------------
 -- code here
 -- -----------------------------------------------------------------------------------
-local start, initTemmie, randomTemmie, moveTemmie, onTemmie
+local start, initTemmie, randomTemmie, moveTemmie, onTemmie, onTemmie2
 local bg, temmieSheet, temmieData, temmie, reverseTemmie
 
 start = function()
@@ -119,18 +119,36 @@ end
 onTemmie = function( e )
 	if e.phase == "began" then
 		if timerID then timer.cancel(timerID) end
-		temmie:setSequence( "bud" )
-		temmie:play()
 	elseif e.phase == "moved" then
+		if temmie.sequence ~= "bud" then
+			temmie:setSequence( "bud" )
+			temmie:play()
+		end
 		temmie.x = e.x
 		temmie.y = e.y
+		if temmie.x < 100 then temmie.x = 100
+		elseif temmie.x + 100 > _W then temmie.x = _W - 100
+		end
+
+		if temmie.y < 100 then temmie.y = 100
+		elseif temmie.y + 100 > _H then temmie.y = _H - 100
+		end
 	elseif e.phase == "ended" then
 		temmie:setSequence( "default" )
 		temmie:play()
+		onTemmie2()
 		randomTemmie()
 	end
 end
 
+onTemmie2 = function()
+	local a = math.random( 1, 4 )
+	if a == 1 then media.playSound( "audioEffect/bob.mp3" )
+	elseif a == 2 then media.playSound( "audioEffect/imbob.mp3" )
+	elseif a == 3 then media.playSound( "audioEffect/temmie.mp3" )
+	elseif a == 4 then media.playSound( "audioEffect/temmie2.mp3" )
+	end
+end
 
 
 start()
