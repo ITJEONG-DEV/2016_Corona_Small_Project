@@ -1,6 +1,9 @@
+display.setStatusBar( display.HiddenStatusBar )
+
 -- require modules
 local setMon = require "setMonster"
 local widget = require "widget"
+local json = require "json"
 
 local _W, _H = display.contentWidth, display.contentHeight
 
@@ -15,47 +18,63 @@ local CC = function (hex)
 	return r, g, b, a
 end
 
+local font1 = native.newFont( "NanumGothicCoding.ttf" )
+
 -- -----------------------------------------------------------------------------------
 -- basic settttting!
 -- -----------------------------------------------------------------------------------
-local compare, compete, competeB, exportB, textCount, bg
+local onStart, compete, loadD, saveD, monD, renewUser
+local competeB, exportB, textCount, textUser, bg
 
 -- stage count
-local count = 0
-
-local maxSum = 50
 
 -- default user set
 local user = 
 {
-	hp = 25,
-	atk = 25,
-	max = 25,
-	mp = 25,
-	weight = 50
+	["hp"] = 25,
+	["atk"] = 25,
+	["max"] = 25,
+	["mp"] = 25,
+	["weight"] = 50,
+	["lv"] = 1,
+	["generation"] = 0,
+	["maxSum"] = 50
 }
 
 local monData = {}
 
+function renewUser()
+	textUser.text = "<user status>\n\n user lv : "..user.lv.."\n user hp : "..user.max.."\n user atk : "..user.atk.."\n user mp : "..user.mp.."\n user weight : "..user.weight
+end
+
 function onStart( e )
+	local function compare(a, b)
+		return a.score > b.score
+	end
+
 	if e.phase == "began" then
+
 		-- setMonData
 		for i = 1, 20, 1 do
-			monData[i] = setMon.setMon(maxSum)
+			monData[i] = setMon.setMon(user.maxSum)
 			-- print(i.."번 째 몬스터.".." hp : "..monData[i].max.." atk : "..monData[i].atk)
 			compete(i)
 		end
 
-
+		-- sort
 		table.sort( monData, compare )
 
 		for i, v in pairs( monData ) do
 			print( i, v.score )
 		end
 
-		count = count + 1
+		user.generation = user.generation + 1
 
-		textCount.text = "generatoin : "..count
+		textCount.text = "generation : "..user.generation
+
+		saveD()
+		renewUser()
+
 	end
 end
 
@@ -145,57 +164,94 @@ function compete( num )
 	print(num.."번째 몬스터의 2 번 째 점수 : "..monData[num].score/2)
 end
 
-function compare(a, b)
-	return a.score > b.score
+function monD()
 end
 
-function saveD(e)
-	if e.phase == "began" then
+function saveD()
+	local path = 'C:/Users/derba/Desktop/2017_Corona_Small_Project/20170710_GA/user.txt'
+
+	local encoded = json.encode( user )
+
+	local file, errorString = io.open( path, "w" )
+
+	if not file then
+		print("not file")
+	else
+	--file:write()
+		file:write( encoded )
+
+		print("save succeed")
+
+		io.close( file )
 	end
+
+	file = nil
 end
 
--- bg = display.newRect( 0, 0, _W, _H )
--- bg:setFillColor( CC("ff6600") )
--- bg.anchorX, bg.anchorY = 0, 0
+function loadD(e)
+	if e.phase == "began" then
+		local path = 'C:/Users/derba/Desktop/2017_Corona_Small_Project/20170710_GA/user.txt'
+
+		local file, errorString = io.open( path, "r" )
+
+		if not file then
+			print( "File error: " .. errorString )
+		else
+			local decoded, pos, msg = json.decodeFile( path )
+
+			if not decoded then
+				print( "decode failed at".. tostring(pos)..": "..tostring(msg))
+			else
+				user = decoded
+				print(decoded)
+			end
+
+			io.close( file )
+		end
+	end
+
+	file = nil
+
+	renewUser()
+end
 
 competeB = widget.newButton(
-    {
-        label = "경쟁하기",
-        onEvent = onStart,
-        fontSize = 15,
-        emboss = true,
-        -- Properties for a rounded rectangle button
-        shape = "roundedRect",
-        top = _H*0.85,
-        left = 10,
-        width = 100,
-        height = 30,
-        cornerRadius = 2,
-        labelColor = { default={ CC("666666") }, over={ CC("666666")} },
-        fillColor = { default={ CC("ffffff") }, over={ CC("888888")} },
-    }
-)
+{
+    label = "경쟁하기",
+    onEvent = onStart,
+    fontSize = 15,
+    font = font1,
+    emboss = true,
+    -- Properties for a rounded rectangle button
+    shape = "roundedRect",
+    top = _H*0.85,
+    left = _W*0.6,
+    width = 100,
+    height = 30,
+    cornerRadius = 4,
+    labelColor = { default={ CC("666666") }, over={ CC("666666")} },
+    fillColor = { default={ CC("ffffff") }, over={ CC("888888")} },
+})
 
-exportB = widget.newButton(
-    {
-        label = "내보내기",
-        onEvent = saveD,
-        fontSize = 15,
-        emboss = true,
-        -- Properties for a rounded rectangle button
-        shape = "roundedRect",
-        top = _H*0.85,
-        left = 120,
-        width = 100,
-        height = 30,
-        cornerRadius = 2,
-        labelColor = { default={ CC("666666") }, over={ CC("666666")} },
-        fillColor = { default={ CC("ffffff") }, over={ CC("888888")} },
-    }
-)
+importB = widget.newButton(
+{
+    label = "불러오기",
+    onEvent = loadD,
+    fontSize = 15,
+    font = font1,
+    emboss = true,
+    -- Properties for a rounded rectangle button
+    shape = "roundedRect",
+    top = _H*0.85,
+    left = _W*0.6 + 110,
+    width = 100,
+    height = 30,
+    cornerRadius = 4,
+    labelColor = { default={ CC("666666") }, over={ CC("666666")} },
+    fillColor = { default={ CC("ffffff") }, over={ CC("888888")} },
+})
 
-textCount = display.newText( "generation : "..count, _W*0.125, _H*0.775 )
+textCount = display.newText( "generation : "..user.generation, _W*0.1, 20, font1 )
 
--- -----------------------------------------------------------------------------------
--- event function listeners
--- -----------------------------------------------------------------------------------
+textUser = display.newText( "", _W*0.12, _H*0.3, font1 )
+renewUser()
