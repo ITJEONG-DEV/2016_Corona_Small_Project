@@ -10,9 +10,10 @@ local maxSum = 50
 -- default user set
 local user = 
 {
-	hp = 20	,
-	atk = 20,
-	max = 20,
+	hp = 25,
+	atk = 25,
+	max = 25,
+	weight = 50
 }
 
 local monData = {}
@@ -39,10 +40,10 @@ function compete( num )
 	local flag
 
 	getScore = function ( n )
-		if n == 1 then return 30 + 10 - math.abs( turn - 5 ) + user.hp, -30  + 10 - math.abs( turn - 5 ) + monData[num].hp
-		elseif n == 2 then return -30  + 10 - math.abs( turn - 5 ) + user.hp, 30  + 10 - math.abs( turn - 5 ) + monData[num].hp
-		elseif n == 3 then return 10  + 10 - math.abs( turn - 5 ) + user.hp, -10  + 10 - math.abs( turn - 5 ) + monData[num].hp
-		elseif n == 4 then return -10  + 10 - math.abs( turn - 5 ) + user.hp, 10  + 10 - math.abs( turn - 5 ) + monData[num].hp
+		if n == 1 then return 20 + 10 - math.abs( turn - 5 ) + 10 - user.hp
+		elseif n == 2 then return 10 + 10 - math.abs( turn - 5 ) + 10 - user.hp
+		elseif n == 3 then return -20 + 10 - math.abs( turn - 5 ) + 10 - user.hp
+		elseif n == 4 then return -15 + 10 - math.abs( turn - 5 ) + 10 - user.hp
 		end
 	end
 
@@ -62,11 +63,11 @@ function compete( num )
 			-- print("몬스터가 "..math.floor( monData[num].atk * 0.2).."만큼의 데이지를 입혔습니다. 남은 체력 "..user.hp)
 
 			if monData[num].hp <= 0 then
-				user.score, monData[num].score = getScore(1)
+				monData[num].score = getScore(1)
 				flag = true
 				break
 			elseif user.hp <= 0 then
-				user.score, monData[num].score = getScore(2)
+				monData[num].score = getScore(2)
 				flag = true
 				break
 			end
@@ -74,9 +75,9 @@ function compete( num )
 
 		if not flag then
 			if monData[num].hp < user.hp then
-				user.score, monData[num].score = getScore(3)
+				monData[num].score = getScore(3)
 			elseif monData[num].hp > user.hp then
-				user.score, monData[num].score = getScore(4)
+				monData[num].score = getScore(4)
 			end
 		end
 
