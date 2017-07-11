@@ -44,6 +44,9 @@ local user =
 local monData = {}
 
 function renewUser()
+	textCount.text = "generation : "..user.generation
+	print(user.generation)
+
 	textUser.text = "<user status>\n\n user lv : "..user.lv.."\n user hp : "..user.max.."\n user atk : "..user.atk.."\n user mp : "..user.mp.."\n user weight : "..user.weight
 end
 
@@ -69,8 +72,6 @@ function onStart( e )
 		end
 
 		user.generation = user.generation + 1
-
-		textCount.text = "generation : "..user.generation
 
 		saveD()
 		renewUser()
