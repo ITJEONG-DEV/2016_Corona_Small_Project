@@ -18,7 +18,7 @@ local CC = function (hex)
 	return r, g, b, a
 end
 
-local a, b, showText, id, createChatUI, flag
+local a, b, c, showText, id, id2, createChatUI, flag
 local num = 0
 
 function createChatUI()
@@ -27,12 +27,29 @@ function createChatUI()
 	b = display.newRect( _W*0.5, _H*0.86, _W*0.95 -10, _H*0.2 -10 )
 	b:setFillColor( CC("000000") )
 
+	c = display.newPolygon( _W*0.93, _H*0.81, { 0, 0, 16, 0, 8, 12 } )
+	-- c.alpha = 0
+ 	
 	showText = display.newText( "", _W*0.06, _H*0.8, font[1], 25 )
 	showText.anchorX, showText.anchorY = 0, 0
 end
 
+function twinkle(e)
+	id2 = e.source
+	local params = e.source.params
+	--print(params.isAlpha)
+
+	if params.isAlpha then
+		c.alpha = 1
+		params.isAlpha = false
+	else
+		c.alpha = 0
+		params.isAlpha = true
+	end
+end
+
 function M.showChat(textArray)
-	local press, showDialog, goNext, first
+	local press, showDialog, goNext, first, setTimer, tm
 	function press(e)
 		local keyName = e.keyName
 
@@ -45,9 +62,17 @@ function M.showChat(textArray)
 					goNext()
 				end
 			elseif keyName == "x" then
-				timer.cancel(id)
-				showText.text = text
-				flag = true
+				if not flag then
+					if num ~= table.maxn(textArray) then
+						print("flag1")
+						setTimer()
+					end
+				end
+				if showText.text ~= text then
+					timer.cancel(id)
+					showText.text = text
+					flag = true
+				end
 			end
 		end
 	end
@@ -55,6 +80,10 @@ function M.showChat(textArray)
 		id = e.source
 
 		if string.len(showText.text) == string.len(text) then
+			if num ~= table.maxn(textArray) then
+				print("flag2")
+				setTimer()
+			end	
 			timer.cancel(id)
 			flag = true
 		end
@@ -63,6 +92,8 @@ function M.showChat(textArray)
 		-- showText.text = showText.text..M.text:sub( string.len(showText.text)+1, string.len(showText.text)+3)
 	end
 	function goNext()
+		c.alpha = 0
+		if id2 then timer.cancel(id2) end	
 		showText.text = ""
 		num = num + 1
 		text = textArray[num]
@@ -70,14 +101,20 @@ function M.showChat(textArray)
 			timer.performWithDelay( 100, showDialog, -1 )
 		else
 			timer.cancel(id)
+			if id2 then timer.cancel(id2) end
 			Runtime:removeEventListener( "key", press )
 			a:removeSelf( )
 			b:removeSelf( )
+			c:removeSelf( )
 			showText:removeSelf( )
 			flag = nil
 		end
 	end
-
+	function setTimer()
+		print("2 num : "..num.." textArray : "..table.maxn(textArray))
+		tm = timer.performWithDelay( 600, twinkle, -1 )
+		tm.params = { isAlpha = true }
+	end
 	function first()
 		createChatUI()
 		Runtime:addEventListener( "key", press )
