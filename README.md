@@ -1,17 +1,12 @@
 
 ## 골프 게임 만들기
-#20161018_Goalf 
-#20161018_GoalfMain
-#20161024_Goalf
-#20161024_BigFlow
+#20161018_Goalf  #20161018_GoalfMain  #20161024_Goalf  #20161024_BigFlow
 
 ## 1인1프로젝트 스터디용 예제
 #20161020_TapNumber
 
 ## 설리번 교육 예제1
-#20170104_example
-#20170101_example
-#20161027_sprite
+#20170104_example  #20170101_example  #20161027_sprite
 
 ## 설리번 교육 예제2_벽돌깨기
 #20170117_example
