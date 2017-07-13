@@ -1,1 +1,1 @@
-{"mp":10,"maxSum":20,"atk":10,"weight":50,"max":10,"lv":1,"hp":10,"generation":15}
+{"mp":10,"max":10,"atk":10,"weight":50,"maxSum":20,"lv":1,"hp":10,"generation":30}

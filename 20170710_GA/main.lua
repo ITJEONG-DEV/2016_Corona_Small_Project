@@ -1,4 +1,5 @@
 display.setStatusBar( display.HiddenStatusBar )
+math.randomseed( os.time( ) )
 -- -----------------------------------------------------------------------------------
 -- require modules
 -- -----------------------------------------------------------------------------------
@@ -23,6 +24,10 @@ end
 
 local NanumGothicCoding = native.newFont( "NanumGothicCoding.ttf" )
 local userPath = 'C:/Users/derba/Desktop/2017_Corona_Small_Project/20170710_GA/user.txt'
+local maxChoose = 20
+local continousFail = 0
+local maxStatusNum = 5
+local isFirst = true
 -- -----------------------------------------------------------------------------------
 -- basic setttttting!
 -- -----------------------------------------------------------------------------------
@@ -37,12 +42,12 @@ local user =
 	["weight"] = 50,
 	["lv"] = 1,
 	["generation"] = 0,
-	["maxSum"] = 20
+	["maxSum"] = 20,
 }
 
 local monData = {}
 
-local renewData, onCompete, compete, saveMonsterData, saveUserData, loadUserData, createUI
+local renewData, onCompete, compete, saveMonsterData, saveUserData, loadUserData, createUI, evolution
 local competeB, importB, showGeneration, showUserStatus
 
 function renewData()
@@ -56,10 +61,15 @@ function onCompete( e )
 	end
 
 	if e.phase == "began" then
-
+		if isFirst == true then
+			print("first")
+			for i = 1, maxChoose, 1 do
+				monData[i] = setMon.setMon(user.maxSum)
+			end
+			isFirst = false
+		end
 		--setMonData & compete
-		for i = 1, 20, 1 do
-			monData[i] = setMon.setMon(user.maxSum)
+		for i = 1, maxChoose, 1 do
 			-- print(i.."번 째 몬스터.".." hp : "..monData[i].max.." atk : "..monData[i].atk)
 			compete(i)
 		end
@@ -67,9 +77,9 @@ function onCompete( e )
 		--sort
 		table.sort( monData, compare )
 
-		-- for i, v in pairs(monData) do
-		--	print( i, v.score )
-		-- end
+		 for i, v in pairs(monData) do
+			print( i, v.max, v.atk, v.def )
+		 end
 
 		user.generation = user.generation + 1
 
@@ -191,6 +201,53 @@ function loadUserData(e)
 		file = nil
 
 		renewData()
+	end
+end
+
+function evolution()
+	local value = 3
+	local function geneMutaion(parent1, parent2, children)
+		local percent, tmp
+		percent = 1 + continousFail * 5
+
+		for k = 1, maxStatusNum, 1 do
+			if math.random( 0, 1 ) then
+				tmp = parent1
+			else
+				tmp = parent2
+			end
+
+			if k == 1 then
+				children.max = tmp.max
+			elseif k == 2 then
+				children.atk = tmp.atk
+			elseif k == 3 then
+				children.mp = tmp.mp
+			elseif k == 4 then
+				children.def = tmp.def
+			elseif k == 5 then
+				chilren.weight = tmp.weight
+			end
+		end
+	end
+
+	if monData[1].score <= 0 then
+		continousFail = continousFail + 1
+		user.maxSum = user.maxSum - value
+		for num = 1, maxChoose, 1 do
+			monData[num] = setMon.setMon(user.maxSum)
+		end
+	elseif monData[20].score >= 0 then
+		continousFail = continousFail + 1
+		user.maxSum = user.maxSum + value
+		for num = 1, maxChoose, 1 do
+			monData[num] = setMon.setMon(user.maxSum)
+		end
+	else
+		continousFail = 0
+		for n = 1, maxChoose/2, 1 do
+			geneMutaion( monData[math.floor(math.random(0, 1)*maxChoose/2)], monData[math.floor(math.random(0, 1)*maxChoose/2)], monData[n+math.floor(maxChoose/2)] )
+		end
 	end
 end
 
