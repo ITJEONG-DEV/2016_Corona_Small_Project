@@ -4,6 +4,7 @@ math.randomseed( os.time( ) )
 -- -----------------------------------------------------------------------------------
 local json = require "json"
 local chatt = require "chatt"
+local physics = require "physics"
 -- -----------------------------------------------------------------------------------
 -- basic setttttting!
 -- -----------------------------------------------------------------------------------
@@ -25,10 +26,14 @@ local NanumGothicCoding = native.newFont( "NanumSquareB.ttf" )
 -- -----------------------------------------------------------------------------------
 -- basic setttttting!
 -- -----------------------------------------------------------------------------------
-local press, makeSprite, move
-local bg, char
+local press, makeSprite, move, charSprite, makeBox
+local bg, char, box
 local goX, goY = 0, 0
+local speed = 2.5
 local isFlip = false
+local isAttacked = false
+local isDamaged = false
+local isDied = false
 bg = display.newRect( 0,0,_W,_H )
 bg.anchorX, bg.anchorY = 0, 0
 bg:setFillColor( CC("666666") )
@@ -47,17 +52,33 @@ chatt.showChat(
 
 function press(e)
 	local keyName = e.keyName
+	print(keyName)
 	if e.phase == "down" then
-		if keyName == "up" then goY = -2
-		elseif keyName == "down" then goY = 2
+		char:setSequence( "walk" )
+		char:play()
+		if keyName == "z" then
+			isAttacked = true
+			print("leftCtrl")
+			char:setSequence( "attack" )
+			char:play()
+		elseif keyName == "leftControl" then
+			isDamaged = true
+			char:setSequence( "damage" )
+			char:play()
+		elseif keyName == "x" then
+			isDamaged = true
+			char:setSequence( "dead" )
+			char:play()
+		elseif keyName == "up" then goY = -1 * speed
+		elseif keyName == "down" then goY = speed
 		elseif keyName == "left" then
-			goX = -2
+			goX = -1 * speed
 			if not isFlip then
 				char:scale(-1, 1)
-				isFlip = false
+				isFlip = true
 			end
 		elseif keyName == "right" then
-			goX = 2
+			goX = speed
 			if isFlip then
 				char:scale(-1, 1)
 				isFlip = false
@@ -69,12 +90,28 @@ function press(e)
 		elseif keyName == "left" then goX = 0
 		elseif keyName == "right" then goX = 0
 		end
+
+		if goX == 0 and goY == 0 and not ( isAttacked or isDamaged or isDied ) then
+			char:setSequence( "normal" )
+			char:play()
+		end
 	end
-	print("X : "..goX.."\tY : "..goY)
+	-- print("X : "..goX.."\tY : "..goY)
+end
+
+function charSprite(e)
+	print(e.target.sequence)
+	if e.phase == "ended" then
+		if e.target.sequence == "attack" then
+			print("sequence : "..e.target.sequence.."\t")
+			isAttacked = false
+			e.target:setSequence("normal")
+		end
+	end
 end
 
 function move()
-	print(char.x, char.y)
+	-- print(char.x, char.y)
 	char.x, char.y = char.x + goX, char.y + goY
 	if char.x + char.contentWidth/2 > _W then
 		char.x = _W - char.contentWidth/2
@@ -92,27 +129,44 @@ end
 function makeSprite()
 	charData = 
 	{
-		width = 128,
-		height = 128,
-		numFrames = 4,
-		sheetContentWidth = 512, 
-		sheetContentHeight = 128,
+		width = 100,
+		height = 100,
+		numFrames = 36,
+		sheetContentWidth = 600, 
+		sheetContentHeight = 600,
 	}
 	charSet = 
 	{
-		{ name = "normal", frames = { 1 }, loopCount = 0 },
-		{ name = "walk", frames = { 1, 2, 3, 4 }, loopCount = 0, time = 300 },
+		{ name = "normal", frames = { 1, 2, 3, 4, 5, 6 }, loopCount = 0, time = 1000 },
+		{ name = "walk", frames = { 7, 8, 9, 10, 11, 12 }, loopCount = 0, time = 500 },
+		{ name = "attack", frames = { 13, 14, 15, 16, 17, 19, 20, 21, 22, 23 }, loopCount = 1, time = 1000 },
+		{ name = "damage", frames = { 18 }, loopCount = 1, time = 500 },
+		{ name = "dead", frames = { 25, 26, 27, 28, 29, 31, 32, 33, 34, 35 }, loopCount = 1, time = 1000 }
 	}
-	charSheet = graphics.newImageSheet( "char_image.png", charData )
+	charSheet = graphics.newImageSheet( "witchCat.png", charData )
 
 	char = display.newSprite( charSheet, charSet )
+	char:addEventListener( "sprite", charSprite )
 	Runtime:addEventListener( "enterFrame", move )
 
 	char.x, char.y = _W*0.5, _H*0.5
 
-	char:setSequence( "walk" )
+	char:setSequence( "normal" )
+	char:scale(-1, 1)
 	char:play()
 end
 
+function makeBox()
+	box = display.newImage("unlock.png", _W*0.2, _H*0.5)
+	boxPhysicsData = (require "box").physicsData(1.0)
+	box:scale(0.5,0.5)
+
+	physics.addBody( box, "static", boxPhysicsData:get("box") )
+end
+display.setDrawMode( "hybrid" )
+physics.start( )
+physics.setGravity( 0, 0 )
 Runtime:addEventListener( "key", press )
 makeSprite()
+makeBox()
+
