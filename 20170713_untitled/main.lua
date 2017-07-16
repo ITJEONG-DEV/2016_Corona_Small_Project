@@ -26,7 +26,7 @@ local NanumGothicCoding = native.newFont( "NanumSquareB.ttf" )
 -- -----------------------------------------------------------------------------------
 -- basic setttttting!
 -- -----------------------------------------------------------------------------------
-local press, makeSprite, move, charSprite, makeBox
+local press, makeSprite, move, charSprite, makeBox, boxCollision
 local bg, char, box
 local goX, goY = 0, 0
 local speed = 2.5
@@ -34,6 +34,7 @@ local isFlip = false
 local isAttacked = false
 local isDamaged = false
 local isDied = false
+local attackTime = 1000
 bg = display.newRect( 0,0,_W,_H )
 bg.anchorX, bg.anchorY = 0, 0
 bg:setFillColor( CC("666666") )
@@ -61,7 +62,7 @@ function press(e)
 			print("leftCtrl")
 			char:setSequence( "attack" )
 			char:play()
-		elseif keyName == "leftControl" then
+		elseif keyName == "leftCdontrol" then
 			isDamaged = true
 			char:setSequence( "damage" )
 			char:play()
@@ -75,12 +76,14 @@ function press(e)
 			goX = -1 * speed
 			if not isFlip then
 				char:scale(-1, 1)
+				char2:scale(-1, 1)
 				isFlip = true
 			end
 		elseif keyName == "right" then
 			goX = speed
 			if isFlip then
 				char:scale(-1, 1)
+				char2:scale(-1, 1)
 				isFlip = false
 			end
 		end
@@ -106,6 +109,7 @@ function charSprite(e)
 			print("sequence : "..e.target.sequence.."\t")
 			isAttacked = false
 			e.target:setSequence("normal")
+			e.target:play()
 		end
 	end
 end
@@ -113,16 +117,30 @@ end
 function move()
 	-- print(char.x, char.y)
 	char.x, char.y = char.x + goX, char.y + goY
+	char2.x, char2.y = char2.x + goX, char2.y + goY
+
 	if char.x + char.contentWidth/2 > _W then
 		char.x = _W - char.contentWidth/2
 	elseif char.x - char.contentWidth/2 < 0 then
 		char.x = char.contentWidth/2
 	end
 
+	if char2.x + char2.contentWidth/2 > _W then
+		char2.x = _W - char2.contentWidth/2
+	elseif char2.x - char2.contentWidth/2 < 0 then
+		char2.x = char2.contentWidth/2
+	end
+
 	if char.y + char.contentHeight/2 > _H then
 		char.y = _H - char.contentHeight/2
 	elseif char.y - char.contentHeight/2 < 0 then
 		char.y = char.contentHeight/2
+	end
+
+	if char2.y + char2.contentHeight/2 > _H then
+		char2.y = _H - char2.contentHeight/2
+	elseif char2.y - char2.contentHeight/2 < 0 then
+		char2.y = char2.contentHeight/2
 	end
 end
 
@@ -139,34 +157,50 @@ function makeSprite()
 	{
 		{ name = "normal", frames = { 1, 2, 3, 4, 5, 6 }, loopCount = 0, time = 1000 },
 		{ name = "walk", frames = { 7, 8, 9, 10, 11, 12 }, loopCount = 0, time = 500 },
-		{ name = "attack", frames = { 13, 14, 15, 16, 17, 19, 20, 21, 22, 23 }, loopCount = 1, time = 1000 },
+		{ name = "attack", frames = { 13, 14, 15, 16, 17, 19, 20, 21, 22, 23 }, loopCount = 1, time = attackTime },
 		{ name = "damage", frames = { 18 }, loopCount = 1, time = 500 },
 		{ name = "dead", frames = { 25, 26, 27, 28, 29, 31, 32, 33, 34, 35 }, loopCount = 1, time = 1000 }
 	}
 	charSheet = graphics.newImageSheet( "witchCat.png", charData )
 
 	char = display.newSprite( charSheet, charSet )
+	char.name = "char"
 	char:addEventListener( "sprite", charSprite )
+	char2 = display.newImage( "attack.png", _W*0.5, _H*0.5 )
+	--charPhysicsData = (require "char").physicsData(1.0)
+	-- char2.alpha = 0
+	--physics.addBody( char2, "dynamic", charPhysicsData:get("attack") )
+	-- char2:addEventListener( "collision", boxCollision )
 	Runtime:addEventListener( "enterFrame", move )
 
 	char.x, char.y = _W*0.5, _H*0.5
 
 	char:setSequence( "normal" )
 	char:scale(-1, 1)
+	char2:scale(-1, 1)
 	char:play()
 end
 
 function makeBox()
 	box = display.newImage("unlock.png", _W*0.2, _H*0.5)
-	boxPhysicsData = (require "box").physicsData(1.0)
+	-- boxPhysicsData = (require "box").physicsData(1.0)
 	box:scale(0.5,0.5)
 
-	physics.addBody( box, "static", boxPhysicsData:get("box") )
+	--box.name = "box"
+
+	--physics.addBody( box, "dynamic", boxPhysicsData:get("box") )
+end
+
+--[[
+function boxCollision( self, event )
+	print("self.myName : "..self.myName.."\tevent.other.name : "..event.other.name)
+	print(self.myName)
+	print(event.other.name)
 end
 display.setDrawMode( "hybrid" )
 physics.start( )
 physics.setGravity( 0, 0 )
+]]--
 Runtime:addEventListener( "key", press )
 makeSprite()
 makeBox()
-
