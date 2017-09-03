@@ -144,6 +144,17 @@ function move()
 	end
 end
 
+function checkedAttack()
+	local x1, x2, y1, y2
+	if isFlip then -- left
+		x1, x2 = char2.x - char2.contentWidth/2, char2.x + char2.contentWidth/2
+		y1, y2 = char2.y - char2.contentHeight/2, char2.y + char2.contentHeight/2
+	else -- right
+		x1, x2 = char2.x - char2.contentWidth/2, char2.x + char2.contentWidth/2
+		y1, y2 = char2.y - char2.contentHeight/2, char2.y + char2.contentHeight/2
+	end
+end
+
 function makeSprite()
 	charData = 
 	{
