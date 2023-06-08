@@ -65,3 +65,8 @@
 
 ## untitled.
 #20170713_untitled
+
+
+## 라이센스
+
+MIT &copy; [ITJEONG](mailto:derbana1027@gmail.com)
